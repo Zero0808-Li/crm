@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 与数据库映射，相当于中间人 -->
+<hibernate-mapping>
+	<class name="cn.cuit.crm.domain.SysPopedom" table="sys_popedom">
+		<!-- 联合主键的映射写法 -->
+		<composite-id name="id" class="cn.cuit.crm.domain.SysPopedomId">
+			<key-property name="popedomModule" type="string">
+				<column name="popedomModule" sql-type="varchar(30)" />
+			</key-property>
+			<key-property name="popedomPrivilege" type="string">
+				<column name="popedomPrivilege" sql-type="varchar(30)" />
+			</key-property>
+		</composite-id>
+		
+		<property name="sort" type="integer">
+			<column name="sort" />
+		</property>
+		
+		<property name="title" type="string">
+			<column name="title" sql-type="varchar(200)" />
+		</property>
+		
+		<property name="popedomName" type="string">
+			<column name="popedomName" sql-type="varchar(200)"/>
+		</property>
+		
+		<property name="remark" type="text">
+			<column name="remark" />
+		</property>
+	</class>
+</hibernate-mapping>
+
+

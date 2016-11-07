@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="cn.cuit.crm.domain.Company" table="c_company">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="code" type="string">
+            <column name="code" length="50" />
+        </property>
+        <property name="name" type="string">
+            <column name="name" length="100" not-null="true" />
+        </property>
+        <property name="pycode" type="string">
+            <column name="pycode" length="100" />
+        </property>
+        <property name="grade" type="string">
+            <column name="grade" length="100" />
+        </property>
+        <property name="regionName" type="string">
+            <column name="regionName" length="100" />
+        </property>
+        <property name="source" type="string">
+            <column name="source" length="100" />
+        </property>
+        <property name="trade" type="string">
+            <column name="trade" length="100" />
+        </property>
+        <property name="scale" type="string">
+            <column name="scale" length="100" />
+        </property>
+        <property name="province" type="string">
+            <column name="province" length="50" />
+        </property>
+        <property name="city" type="string">
+            <column name="city" length="50" />
+        </property>
+        <property name="postcode" type="string">
+            <column name="postcode" length="50" />
+        </property>
+        <property name="address" type="string">
+            <column name="address" length="200" />
+        </property>
+        <property name="email" type="string">
+            <column name="email" length="100" />
+        </property>
+        <property name="web" type="string">
+            <column name="web" length="200" />
+        </property>
+        <property name="tel1" type="string">
+            <column name="tel1" length="50" />
+        </property>
+        <property name="fax" type="string">
+            <column name="fax" length="50" />
+        </property>
+        <property name="mobile" type="string">
+            <column name="mobile" length="50" />
+        </property>
+        <property name="tel2" type="string">
+            <column name="tel2" length="50" />
+        </property>
+        <property name="nextTouchDate" type="date">
+            <column name="nextTouchDate" length="10" />
+        </property>
+        <property name="quality" type="string">
+            <column name="quality" length="100" />
+        </property>
+        <property name="remark" type="string">
+            <column name="remark" length="65535" />
+        </property>
+        <property name="dealin" type="string">
+            <column name="dealin" length="100" />
+        </property>
+        <property name="kind" type="string">
+            <column name="kind" length="100" />
+        </property>
+        <property name="artificialPerson" type="string">
+            <column name="artificialPerson" length="50" />
+        </property>
+        <property name="registeMoney" type="string">
+            <column name="registeMoney" length="50" />
+        </property>
+        <property name="bank" type="string">
+            <column name="bank" length="100" />
+        </property>
+        <property name="account" type="string">
+            <column name="account" length="100" />
+        </property>
+        <property name="taxCode" type="string">
+            <column name="taxCode" length="100" />
+        </property>
+        <property name="creater" type="string">
+            <column name="creater" length="50" />
+        </property>
+        <property name="createTime" type="string">
+            <column name="createTime" length="19" />
+        </property>
+        <property name="updater" type="string">
+            <column name="updater" length="50" />
+        </property>
+        <property name="updateTime" type="string">
+            <column name="updateTime" length="19" />
+        </property>
+        
+        <!-- 配置客户(多)到用户(一)的多对一关联 -->
+        <many-to-one name="sysUser" class="cn.cuit.crm.domain.SysUser" lazy="false">
+           <column name="ownerUser"></column>
+        </many-to-one>
+        
+        <property name="dispensePerson" type="string">
+            <column name="dispensePerson" length="50" />
+        </property>
+        <property name="dispenseDate" type="string">
+            <column name="dispenseDate" length="19" />
+        </property>
+        <property name="shareFlag" type="java.lang.Character">
+            <column name="shareFlag" length="1" />
+        </property>
+        <property name="shareIds" type="string">
+            <column name="shareIds" length="500" />
+        </property>
+    </class>
+</hibernate-mapping>

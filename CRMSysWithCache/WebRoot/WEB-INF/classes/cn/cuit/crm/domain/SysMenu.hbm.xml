@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 与数据库映射，相当于中间人 -->
+<hibernate-mapping>
+	<class name="cn.cuit.crm.domain.SysMenu" table="sys_menu">
+		<!-- 联合主键的映射写法 -->
+		<composite-id name="id" class="cn.cuit.crm.domain.SysMenuId">
+			<key-property name="menuModule" type="string">
+				<column name="menuModule" sql-type="varchar(30)" />
+			</key-property>
+			<key-property name="menuPrivilege" type="string">
+				<column name="menuPrivilege" sql-type="varchar(30)" />
+			</key-property>
+		</composite-id>
+		
+		<property name="sort" type="integer">
+			<column name="sort" />
+		</property>
+		
+		<property name="title" type="string">
+			<column name="title" sql-type="varchar(200)" />
+		</property>
+		
+		<property name="menuName" type="string">
+			<column name="menuName" sql-type="varchar(200)"/>
+		</property>
+		
+		<property name="url" type="string">
+			<column name="url" sql-type="varchar(200)"/>
+		</property>
+		
+		<property name="target" type="string">
+			<column name="target" sql-type="varchar(20)"/>
+		</property>
+		
+		<property name="icon" type="string">
+			<column name="icon" sql-type="varchar(20)"/>
+		</property>
+		
+		<property name="remark" type="text">
+			<column name="remark" />
+		</property>
+	</class>
+</hibernate-mapping>
+
+

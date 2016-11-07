@@ -1,0 +1,449 @@
+
+采用的是Spring和Struts2分离的好处：不需要再web.xml中监听加载，获取服务bean通过静态方法很方便，通过异常可以看到效果
+
+客户的所有字段一般都要作为查询条件
+
+客户的需求是会经常变更的可以预留字段来解决
+
+项目（针对某个企业做的，一般价钱高）和产品（卖个各个企业，一般价钱不高，要的是销售量）
+
+权限可以分为菜单权限（粗粒度）和操作权限（细粒度）
+
+为了可以让Eclipse创建的项目可以导入MyEclipse中，在创建工程时将class问路径改为WebRoot\WEB-INF\classes，根目录也为WebRoot
+
+在开发中，button一般都用来做表单提交（可以放图片），一般不用使用submit
+
+如果Spring报下面类似的错误，一般就是当前使用的Spring版本和JDK版本不兼容造成的
+org.springframework.beans.factory.BeanDefinitionStoreException: Unexpected exception parsing XML document from class path resource [beans.xml]; nested exception is java.lang.IllegalStateException: Context namespace element 'component-scan' and its parser class [org.springframework.context.annotation.ComponentScanBeanDefinitionParser] are only available on JDK 1.5 and higher（解决方法是Spring2.5要使用JDK5/6/7不能使用8）
+	
+	书写实体类PO对象
+	建立实体映射文件xxx.hbm.xml
+	将实体映射文件配置到hibernate的配置文件中
+	新建VO对象，保存页面数据
+	
+	事务管理器（一个切面AOP）和通知之间的关系：通知是切面的一部分
+	声明式事务（编写程序或通过配置方式）就是AOP的实践
+	
+VO和PO的对应建立 【VO对象保存JSP页面的值（即视图表单元素，类型和表单的一样，一般都是字符串）,用于Action里面填充PO实体（实体即是PO对象，持久化对象，他的类型和数据库的类型相同）】
+
+页面的值先到VO，在Action中（使用BeanUtils，特殊情况就是日期处理，要注册转化器，参考SQLDateConverter和CompanyAction的171行）将VO在拷贝到PO中，调用Service调用DAO将PO再对应数据库的值，进行持久化到数据库
+
+在写Struts时一般都是一个思路：根据请求路径创建Action，在根据Action创建对应的处理方法，再利用Struts配置文件建立请求路径和action之间的关联	
+	
+在通过Id查询时使用Serializable可以的原因的Integer的父类Number，即String、Long都是实现了Serializable接口的 ， 所以在Hibernate的查询等中Serializable接口是最常用最牛的类型
+
+SQL语句出现在业务层是不合理的，它是和数据库交互的，所以一般是出现在Dao层
+而HQL语句却可以出现在业务层，因为他是面向对象的，我们最终操作的是JavaBean
+
+参考SysUserGroupServiceImpl的76行
+* SQL语句出现在业务（客户要求的便是业务）层是不合理的，它最好在DAO层
+* HQL语句是面向对象的，可以出现在业务层，我们最终操作的是JavaBean
+* Sql语句：
+* 		select * from sys_user_group o where o.name like '%销售部%' and o.principal='Tom' order by o.id asc, o.name desc;
+
+* Hql语句:
+* 		select * from SysUserGroup o where 在DAO层产生
+* 		o.name like '%销售部%' and o.principal='Tom' 在业务层组织产生（where条件）
+* 	    order by o.id asc, o.name desc; 在业务层组织产生 （排序条件） 	
+
+在组织条件是遇到的问题（请参考CommonDaoImpl类）：
+	/***** 千万注意这里的select不能使用“*” 要是使用别名o，否则报hql语法错误，但是如果使用“*”在数据库去执行SQL语句是可以的，使用“o”到数据库去执行报SQL语法错误，这也可能是hibernate和SQL之前不同 *****/
+	String hql = "select o from " + entityClass.getSimpleName() + " o where 1=1 ";
+	
+正确的HQL：select o from SysUserGroup o where 1=1  and o.name like "%销售部%"  and o.principal = "tom"  order by o.id asc;	
+
+正确的SQL：select * from sys_user_group o where 1=1   and o.name like "%销售部%"  and o.principal = "tom" order by o.id asc;	
+
+通过观察控制台打印出来的hibernate自动生成的hql语句（如下），它在查询的时候使用了别名，所以不能使用select *（自己是这么想的）
+Hibernate: 
+    select
+        sysusergro0_.id as id0_, #别名
+        sysusergro0_.remark as remark0_, #别名
+        sysusergro0_.name as name0_, #别名
+        sysusergro0_.principal as principal0_, #别名
+        sysusergro0_.incumbent as incumbent0_  #别名
+    from
+        sys_user_group sysusergro0_ 
+    where
+        1=1 
+        and (
+            sysusergro0_.name like ?
+        ) 
+        and sysusergro0_.principal=? 
+    order by
+        sysusergro0_.id asc
+		
+		
+request.setAttribute("sysUserGroups", sysUserGroups)
+该request是一个Struts2的StrutsRequestWrapper对象而不是真正的request，它对Servlet的request包装了一下而已
+数据放该在request域中，使用OGNL表达式获取方式，其他域类似处理即可 （这种获取方式是针对Struts2标签）%{#request.sysUserGroups}或者#request.sysUserList， 是EL表达式直接，${sysUserGroups}, %{}和${}类似,只是写法不一样罢了
+
+CheckBox的多选全选和在一个页面打开一个新窗口（模态框，JS也有函数打开模态框window.showModalDialog，现在有很多插件都能实现这个功能，用时再去查，但是要知道有这么个东西，不然到时查都不知道怎么去查）（OpenWin参考win.js文件）的JavaScript代码参考部门list页面
+
+关于新建一个ICommonDao、CommonDaoImpl还要新建ISysRoleDao、ISysRoleDaoImpl一是为了能更好的代码结构而且ICommonDao都是一些最通用的功能，如果对于某个实体具有特殊操作，我们便可以在ISysRoleDao去定义、第二个重要的就是能够使用泛型反射获取具体类型（参考GenericClass工具类）
+
+如果有发生JDK版本的变化（要修改编译级别），例如在发布到Tomcat时报错：Project facet Java version 1.8 is not supported.一般就是JDK版本问题引起的，解决方法：选中项目右键-->Properties--> Project Facets修改Java版本
+
+记录的删除：真删除，就是将记录从数据库物理的删除，假删除，就是给表中多设计一个字段标识，当被标识后，我们在查询时不查询该记录，即为假删除
+
+登录页面login.jsp里面的global.js等和jQuery如果有冲突，将前者等注释掉（我已经做了）
+
+对于Struts2和Spring的分离式开发，在书写注解的时候千万不能重复，否则会报ServiceProvider类加载失败，因为Spring容器创建对象时单例的，这种情况在写的时候一般我们不会写重复，主要是我们copy时，一定要copy后立即修改注解，不然后面就忘记了
+
+登录时的记住我，就是使用Cookie技术，验证码要放在Session中，对于这个功能现在很多浏览器已经为我们实现，可以不用做了，但是使用的哪些技术我们还是要知道得
+
+template.simple包中，验证码错误消息显示时：由于Struts2提供的标签模板不能满足我们的显示需求，它新增加了一些我们不需要的标签，所以这我们自己复制他的然后修改成我们需要的（把它模板里面默认生成的我们又不需要的标签删除掉），覆盖掉原来Struts2提供的模板即可	
+
+Cookie的特性，放在根目录下时，它的所有子路径都是可以访问的
+
+Struts2中模型驱动对象（就是我们的from对象也叫VO，它和实体PO，属性大多都是类似的，一般就只有日期特殊，VO都是一般都是String，而PO则一般是Date）是在栈顶，在页面可以通过Struts2的标签直接获取其属性，当模型驱动对象里面的属性变化时， Struts2标签是自动解析，无需其他操作
+
+Struts2中result默认是转发，而且是转发到JSP，Struts2中重定向到Action配置文件type="redirectAction"，如果要转发到另一个Action则写作type="chain"，使用转发链，请求才参数不会丢
+
+新增数据后应该是重定向到Action通过Action的list方法获取数据后再去list页面，而不是直接跳转到list页面（参考Struts2配置文件和分析excel文件）
+
+验证码获取Session里面的验证码时要从已有的Session中获取（参考SessionUtil）
+获取一个已有的Session：HttpSession session = request.getSession(false);
+获取一个新的Session：HttpSession session = request.getSession();
+
+过滤器和拦截器的区别：
+/*************************************************************************************/
+过滤器Filter是配置在web.xml文件，是在服务器启动的时候就加载的，他是Servlet平台的类，拦截器Interceptor是配置在Struts2的struts.xml配置文件中的,一般写成拦截器栈，他是Struts2平台的类（拦截器的提供平台又分为Struts2的和SpringMVC的，区别请参考百度）（上百度搜索：拦截器和过滤器的区别，O啦）
+//下面是一段百度的答案
+1、首先要明确什么是拦截器、什么是过滤器
+   1.1 什么是拦截器： 
+    拦截器，在AOP（Aspect-Oriented Programming）中用于在某个方法或字段被访问之前，进行拦截然后在之前或之后加入某些操作。拦截是AOP的一种实现策略。 
+   在Webwork的中文文档的解释为——拦截器是动态拦截Action调用的对象。它提供了一种机制可以使开发者可以定义在一个action执行的前后执行的代码，也可以在一个action执行前阻止其执行。同时也是提供了一种可以提取action中可重用的部分的方式。 
+    谈到拦截器，还有一个词大家应该知道——拦截器链（Interceptor Chain，在Struts 2中称为拦截器栈           Interceptor Stack）。拦截器链就是将拦截器按一定的顺序联结成一条链。在访问被拦截的方法或字段时，拦截器链中的拦截器就会按其之前定义的顺序被调用。 
+1.2.    拦截器的实现原理： 
+ 大部分时候，拦截器方法都是通过代理的方式来调用的。Struts 2的拦截器实现相对简单。当请求到达Struts 2的ServletDispatcher时，Struts 2会查找配置文件，并根据其配置实例化相对的拦截器对象，然后串成一个列表（list），最后一个一个地调用列表中的拦截器。
+1.3 什么是过滤器
+过滤器是一个程序，它先于与之相关的servlet或JSP页面运行在服务器上。过滤器可附加到一个或多个servlet或JSP页面上，并且可以检查进入这些资源的请求信息。在这之后，过滤器可以作如下的选择：
+①以常规的方式调用资源（即，调用servlet或JSP页面）。
+②利用修改过的请求信息调用资源。
+③调用资源，但在发送响应到客户机前对其进行修改。
+④阻止该资源调用，代之以转到其他的资源，返回一个特定的状态代码或生成替换输出。
+ 
+1.4 Servlet过滤器的基本原理
+在Servlet作为过滤器使用时，它可以对客户的请求进行处理。处理完成后，它会交给下一个过滤器处理，这样，客户的请求在过滤链里逐个处理，直到请求发送到目标为止。例如，某网站里有提交“修改的注册信息”的网页，当用户填写完修改信息并提交后，服务器在进行处理时需要做两项工作：判断客户端的会话是否有效；对提交的数据进行统一编码。这两项工作可以在由两个过滤器组成的过滤链里进行处理。当过滤器处理成功后，把提交的数据发送到最终目标；如果过滤器处理不成功，将把视图派发到指定的错误页面。
+ 
+2、拦截器与过滤器的区别 ： 
+     1. 拦截器是基于java的反射机制的，而过滤器是基于函数回调。
+     2. 拦截器不依赖与servlet容器，过滤器依赖与servlet容器。 
+     3. 拦截器只能对action请求起作用，而过滤器则可以对几乎所有的请求起作用。
+     4. 拦截器可以访问action上下文、值栈里的对象，而过滤器不能访问。 
+     5. 在action的生命周期中，拦截器可以多次被调用，而过滤器只能在容器初始化时被调用一次
+
+拦截器的代码实现(以struts2为例)：
+1、在xml文件中如何定义拦截器
+<interceptors>
+ <interceptor name="filterIPInterceptor"
+                         class="com.xxxx.web.FilterIPActionInterceptor" />
+<interceptor-stack name="filterIPStack">
+<interceptor-ref name="defaultStack" />
+                              
+<interceptor-ref name="filterIPInterceptor" />
+</interceptor-stack>
+</interceptors>
+ 
+2、怎么写自定义拦截器 
+ 
+public class FilterIPActionInterceptor extends AbstractInterceptor
+{
+    /** 日志控制. */
+    private final Log log = LogFactory.getLog(getClass());
+ 
+    /**
+     * @see com.opensymphony.xwork2.interceptor.AbstractInterceptor#intercept(com.opensymphony.xwork2.ActionInvocation)
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public String intercept(ActionInvocation invocation) throws Exception
+    {
+        String result = null;
+        // 获得当前方法名.
+        String methodName = invocation.getInvocationContext().getName();
+        String currIp = null;
+        try
+        {
+            if (invocation.getAction() instanceof PortletAction)
+            {
+                PortletAction action = (PortletAction) invocation.getAction();
+                currIp = action.getRequest().getRemoteAddr();
+            }
+            String ip = ApplicationResource.getHotValue("ALLOW_CACHE_IP");
+ 
+            if (StringUtils.isBlank(ip) || StringUtils.isBlank(currIp))
+            {
+                log.error("允许刷新的IP不存在或当前请求的IP非法.");
+                throw new NoAllowIPException();
+            }
+            else
+            {
+                String[] ips = ip.split(",");
+                boolean errorIp = true;
+                for (String s : ips)
+                {
+                    if (s.equals(currIp))
+                        errorIp = false;
+                }
+                // 判断IP
+                if (errorIp)
+                    throw new NoAllowIPException();
+            }
+            result = invocation.invoke();//调用被拦截的方法
+        }
+        catch (Exception e)
+        {
+            log.error("异常类名:" + invocation.getAction().getClass());
+            log.error("异常方法:" + methodName, e);
+            throw e;
+        }
+ 
+        return result;
+    }
+ 
+}
+
+3、怎么编写过滤器
+ 
+     1、在web.xml里面配置自定义的拦截器
+        <filter>
+<filter-name>Redirect Filter</filter-name>
+<filter-class>com.xx.filter.RedirectFilter</filter-class>
+</filter>
+ 
+<filter-mapping>
+<filter-name>Redirect Filter</filter-name>
+<url-pattern>/xx/xx/*</url-pattern>
+ 
+</filter-mapping>
+ 
+    2、如何编写自定义的拦截器
+public class RedirectFilter implements Filter {
+       public void doFilter(ServletRequest request, ServletResponse response,
+              FilterChain filterChain) throws IOException, ServletException {
+    // 获取URL
+   Long startTime = null;
+        if (log.isDebugEnabled())
+        {
+            startTime = System.currentTimeMillis();
+        }
+              HttpServletRequest httpRequest = (HttpServletRequest) request;
+                          String url = httpRequest.getRequestURL().toString();
+                      if (url == null || url.trim().length() == 0) {
+                                    return;
+                                                   }
+                     if (url.indexOf(luceneCreateMapping) != -1
+                                  || url.indexOf(luceneSearchMapping) != -1) {
+                               doFilterForxxx(request, response, url);
+                               } else {
+                                     doxxxx(request, response, url);
+                                    }
+         if (log.isDebugEnabled())
+        {
+            long endTime = System.currentTimeMillis();
+            Thread currentThread = Thread.currentThread();
+            String threadName = currentThread.getName();
+            log.debug("[" + threadName + "]" + "< "
+                    + this.getClass().getName() + " " + url + " "
+                    + (endTime - startTime) + " ms");
+        }
+// 激活下一个Filter
+ filterChain.doFilter(request, response);
+ 
+        }
+}
+/*************************************************************************************/
+
+注意request.getContextPath()和request.getServletPath()两个方法的使用，写的时候看清楚，前者是获取请求根路径，即上下文路径，后者是获取请求路径，即除根以外，后面的路径（参考SessionCheckUserFilter过滤器）
+
+凡是在WEB-INF目录下的jsp文件都不能直接相互跳转的，否则是404错误，必须通过控制器转发或者重定向，WebRoot下的可以直接转发或者重定向到WEN-INF下的jsp文件（参考index.jsp）
+
+并不是所有的实体类都需要控制器，但是他们有Service或者Dao（参考本项目的操作表Popedom操作权限表PopedomPrivilege还有CodeRule表它的操作在Company的Service完成的，操作Popedom时只需要PopedomPrivilege的Service接口），总之一句话需要什么创建什么
+
+细粒度的权限控制：每个功能（按钮）都对应了一个Action中的请求方法，我们只需要实现对Action中方法的请求的控制也就实现了权限的控制
+
+什么时候需要建立VO对象：当页面要人工输入数据，这些数据要保存到数据库时，操作过程VO-->PO-->DB
+
+一个对象作为一个实体的主键，那么该对象应该重写hashCode和equals方法保证id的唯一（参考SysPopedomPrivilegeId类）
+
+凡是以‘/’（即根）开头的路径就是绝对路径（想想Linux的路径就记住了）
+
+JSP中的九大隐式对象中PageContext对象持有其他对象的引用（通过他可以获取其他隐式对象）
+request、response、config、pagecontext、Session、exception、Application、page、out
+
+/******************************************************************************/
+hibernate中identity和increment区别
+hibernate identity increment native sequence 	
+
+identity:由底层数据库生成标识符。identity是由数据库自己生成的，但这个主键必须设置为自增长，前提条件是低层数据库支持自动增长字段类型  
+
+increment:由hibernate管理主键，自动以递增的方式生成标识符，每次增量为1。其在每次插入前取得一个当前最大的id+１作为主键，该主键必须为Integer类型
+
+附：
+  “assigned”  
+  主键由外部程序负责生成，在   save()   之前指定一个。  
+   
+  “hilo”  
+  通过hi/lo   算法实现的主键生成机制，需要额外的数据库表或字段提供高位值来源
+    
+  “seqhilo”  
+  与hilo   类似，通过hi/lo   算法实现的主键生成机制，需要数据库中的   Sequence，适用于支持   Sequence   的数据库，如Oracle。  
+   
+  “increment”  
+  主键按数值顺序递增。此方式的实现机制为在当前应用实例中维持一个变量，以保存着当前的最大值，之后每次需要生成主键的时候将此值加1作为主键。这种方式可能产生的问题是：不能在集群下使用。  
+   
+  “identity”  
+  采用数据库提供的主键生成机制。如DB2、SQL   Server、MySQL   中的主键生成机制。  
+    
+  “sequence”  
+  采用数据库提供的   sequence   机制生成主键。如   Oralce   中的Sequence。  
+    
+  “native”(常用)  
+  由   Hibernate  根据使用的数据库自行判断采用   identity、hilo、sequence   其中一种作为主键生成方式。    
+   
+  “uuid.hex”  
+  由   Hibernate   基于128   位   UUID   算法   生成16   进制数值（编码后以长度32   的字符串表示）作为主键。  
+   
+  “uuid.string”  
+  与uuid.hex   类似，只是生成的主键未进行编码（长度16），不能应用在   PostgreSQL   数据库中。  
+    
+  “foreign”  
+  使用另外一个相关联的对象的标识符作为主键。  
+/******************************************************************************/
+
+下拉选的数据一般都是来源于另一张表（参考：客户来源），但是下拉选的表可以只建立一张，然后使用字段将不同的下拉选区分开来即可（参考sys_dictionary_type表）
+
+该项目中的省和城市的数据在以后的项目开发中如果使用到了可以直接拿来用
+
+关于城市和省份的关联，按照Hibernate的本来应该是一对多，但是这里我们使用的传统的主外键关联，直接在城市实体中设置一个pid关联城市，而没有设置一个Province对象来关联
+
+AJAX请求返回值一般都是null，页面请求需要的数据都是通过response对象响应用流把数据写回页面（参考省和城市二级联动的showCity方法或者客户拼音生成的方法）
+response.getWriter().print(jsonArray.toString());
+
+一般一些关于框架的一些默认配置都是有一个配置文件，而且配置文件就在jar包中，例如Struts2的默认配置文件，在Struts2核心包下struts-default.xml，ehcache缓存的默认配置文件在它自己的jar文件下ehcache-default.xml
+
+Hibernate二级缓存的四大级别：类级别缓存、集合级别缓存（缓存的是查询条件，不过缓存对象的实体，缓存对象的实体永远是放在类级别的缓存中）、查询缓存（存放的是对象的查询条件，即id）、更新时间戳缓存（百度一下）http://www.cnblogs.com/xiaoluo501395377/p/3377604.html
+
+JFreeChart报表类：
+	org.jfree.chart.ChartFrame
+	org.jfree.chart.ChartFactory;
+	org.jfree.chart.ChartUtilities;
+	org.jfree.chart.JFreeChart;
+	org.jfree.chart.axis.CategoryAxis
+	org.jfree.chart.axis.CategoryAxis3D;
+	org.jfree.chart.axis.NumberAxis
+	org.jfree.chart.axis.NumberAxis3D;
+	org.jfree.chart.axis.NumberTickUnit;	
+	org.jfree.chart.plot.CategoryPlot;
+	org.jfree.chart.plot.PlotOrientation;
+	org.jfree.chart.plot.PiePlot3D
+	org.jfree.chart.renderer.category.LineAndShapeRenderer
+	org.jfree.chart.renderer.category.BarRenderer3D;
+	org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
+	org.jfree.data.category.CategoryDataset
+	org.jfree.data.category.DefaultCategoryDataset
+	org.jfree.data.general.DefaultPieDataset
+	org.jfree.data.general.PieDataset
+	
+汉字拼音类：
+	net.sourceforge.pinyin4j.PinyinHelper;
+	net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
+	net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
+	net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
+	net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
+
+JDK中使用到的类
+	java.io.File
+	java.io.Serializable
+	java.io.UnsupportedEncodingException
+	java.util.Date
+	java.util.Collection
+	java.util.LinkedHashMap
+	java.util.ArrayList
+	java.util.List
+	java.util.Map
+	java.sql.Date
+	java.sql.SQLException
+	java.io.IOException
+	java.lang.reflect.ParameterizedType #泛型参数类型
+	java.lang.reflect.InvocationTargetException
+	java.lang.reflect.Method （拦截器处使用）
+	java.lang.annotation.Retention #元注解：使用这个注解修饰我们定义的注解用于在运行时能够反射出该我们定义的注解
+	java.lang.annotation.RetentionPolicy #元注解
+	java.net.URLDecoder  #URL解码（Cookie）
+	java.net.URLEncoder  #URL编码
+	java.awt.Font
+		
+	javax.annotation.Resource #注解，用于注入它和Spring是无关的
+	org.junit.Test
+	
+Apache的工具类
+	org.apache.commons.lang.StringUtils
+	org.apache.commons.beanutils.BeanUtils #操作bean的属性
+	org.apache.commons.lang.time.DateFormatUtils #DateFormatUtils类比SimpleDateFormat强，也是一个Java的增强工具类和StringUtils类似
+	org.apache.commons.beanutils.ConvertUtils #类型转换工具（注册转换器）
+	org.apache.commons.beanutils.Converter #类型转换接口（一般是日期和字符串直接的转化）
+	
+JSON工具类
+	net.sf.json.JSONArray;  #省和城市的二级联动处使用（参考CompanyAction中的showCity方法）
+	net.sf.json.JsonConfig;
+	
+Servlet容器类
+	javax.servlet.http.HttpServletRequest; #和http协议相关的servlet请求
+	javax.servlet.http.HttpServletResponse;
+	javax.servlet.http.Cookie
+	javax.servlet.Filter #过滤器接口（检查用户是否登录的过滤器）
+	javax.servlet.FilterChain #过滤器链，Filter接口中的doFilter方法中的参数
+	javax.servlet.FilterConfig # Filter接口中的init初始化方法中的参数
+	javax.servlet.ServletException
+	javax.servlet.ServletRequest #和协议无关的servlet请求接口
+	javax.servlet.ServletResponse
+	javax.servlet.jsp.JspContext
+	javax.servlet.jsp.JspException
+	javax.servlet.jsp.PageContext
+	javax.servlet.jsp.tagext.JspFragment #代表标签体
+	javax.servlet.jsp.tagext.JspTag
+	javax.servlet.jsp.tagext.SimpleTag  #自定义标签要继承的类，它继承了JspTag
+	
+	
+mysql数据库驱动
+	com.mysql.jdbc.Driver
+	
+c3p0数据源（配置数据源时，写在配置文件）
+	com.mchange.v2.c3p0.ComboPooledDataSource
+	
+Struts2中使用的类
+	org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter #配置在web.xml文件中的Struts2的核心过滤器
+	com.opensymphony.xwork2.ModelDriven #模型驱动，在栈顶
+	org.apache.struts2.interceptor.ServletRequestAware; #获取Request对象的适配器
+	org.apache.struts2.interceptor.ServletResponseAware; #获取Response对象的适配器
+	com.opensymphony.xwork2.ActionSupport
+	org.apache.struts2.ServletActionContext  #连接Struts2和servlet的桥梁
+	com.opensymphony.xwork2.ActionInvocation
+	com.opensymphony.xwork2.interceptor.MethodFilterInterceptor #很强的一个拦截器，令牌拦截器都继承于它
+	
+Hibernate3中使用的类	
+    org.hibernate.Session
+	org.hibernate.SessionFactory
+	org.hibernate.Transaction
+	org.hibernate.cfg.Configuration
+	org.hibernate.HibernateException
+	org.hibernate.Query
+	org.hibernate.dialect.MySQL5Dialect #方言，写在配置文件
+	org.hibernate.cache.EhCacheProvider #缓存提供商，写在配置文件
+	
+Spring2.5中使用到的类
+	org.springframework.orm.hibernate3.HibernateCallback  #回调接口
+	org.springframework.orm.hibernate3.support.HibernateDaoSupport 
+	org.springframework.stereotype.Repository  #Dao层使用的注解
+	org.springframework.context.ApplicationContext
+	org.springframework.context.support.ClassPathXmlApplicationContext
+	org.springframework.stereotype.Service;  #Service层使用的注解
+	org.springframework.transaction.annotation.Isolation  #事务的隔离级别
+	org.springframework.transaction.annotation.Propagation #事务的传播行为
+	org.springframework.transaction.annotation.Transactional
+	org.springframework.orm.hibernate3.LocalSessionFactoryBean #创建SessionFactory的工厂bean，写在配置文件
+	org.springframework.orm.hibernate3.HibernateTransactionManager #事务管理器，写在配置文件
+	

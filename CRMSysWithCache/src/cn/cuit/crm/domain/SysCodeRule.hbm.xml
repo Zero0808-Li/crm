@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated 2011-1-18 11:43:09 by Hibernate Tools 3.3.0.GA -->
+<hibernate-mapping>
+    <class name="cn.cuit.crm.domain.SysCodeRule" table="sys_code_rule">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="module" type="string">
+            <column name="module" length="20" />
+        </property>
+        <property name="areaPrefix" type="string">
+            <column name="areaPrefix" length="20" />
+        </property>
+        <property name="areaTime" type="string">
+            <column name="areaTime" length="20" />
+        </property>
+        <property name="glideBit" type="integer">
+            <column name="glideBit" />
+        </property>
+        <property name="currentCode" type="string">
+            <column name="currentCode" length="50" />
+        </property>
+        <property name="tabName" type="string">
+            <column name="tabName" length="50" />
+        </property>
+        <property name="available" type="string">
+            <column name="available" length="10" />
+        </property>
+        <property name="nextseq" type="string">
+            <column name="nextseq" length="20" />
+        </property>
+        <property name="curDate" type="string">
+            <column name="curDate" length="10" />
+        </property>
+    </class>
+</hibernate-mapping>

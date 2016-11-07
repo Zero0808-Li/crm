@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="cn.cuit.crm.domain.SysOperateLog" table="sys_operate_log">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" />
+            <generator class="identity" />
+        </id>
+        <property name="userName" type="string">
+            <column name="userName" length="100" />
+        </property>
+        
+        <property name="cnname" type="string">
+            <column name="cnname" length="100" />
+        </property>
+        
+        <property name="actionType" type="string">
+            <column name="actionType" length="20" />
+        </property>
+        
+        <property name="actionContent" type="text">
+            <column name="actionContent"/>
+        </property>
+        
+        <property name="actionDate" type="string">
+            <column name="actionDate" length="20" />
+        </property>
+    </class>
+</hibernate-mapping>

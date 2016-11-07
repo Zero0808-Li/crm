@@ -1,0 +1,410 @@
+
+
+用户名和密码
+admin----123456
+工程编码UTF-8
+
+OA（办公自动化管理系统）
+CRM（Eclipse-mars-2 +Struts2+Spring2.5+Hibernate3+tomcat7.70+mysql5.6+JDK1.5~7都行，不能是8，因为Spring2.5不支持）
+*客户关系管理系统（客户管理系统，OA系统管理，进销存管理系统）
+	*客户管理系统：管理客户（企业）客户【重要客户（VIP），签约客户，成交客户，潜在客户，放弃客户】
+	*OA管理系统
+	*进销存管理系统（入库管理，出库管理，库存管理）
+
+*****采用的是Spring和Struts2分离（ServiceProvinder和ServiceProvinderCore）*********
+该项目没有使用分页技术，全注解开发
+
+功能点和技术说明（参考该项目使用了哪些类）：
+	登录时的验证码、记住我：Cookie，Response，Request，Session技术
+	1：客户管理的客户拜访：（新建、更新、下次联系时间、共享、经手人变更、删除、按条件搜索）
+	客户（这里的客户是其他公司）里面有一系列的下拉选，由于管理很多表查询效率低下，我们就直接使用的字符串，直接插在表中，而不是新建一系列的表来关联（参考company实体和其添加页面和CompanyAction的add方法），还有部分下拉框没有做，使用的静态数据，做法和做过的一模一样
+	
+	流水号的生成：参考CompanyAction的add方法
+	
+	客户共享，变更等：（只实现了复选框的单个共享，多个客户的共享没有实现）
+	
+	客户模块拼音操作：自动生成客户汉字的拼音首字母码：pinyin4j技术
+	
+	AJAX异步请求：参考客户添加页面填完客户名称立刻生成客户名称的拼音首字母
+	
+	二级联动：参考客户添加页面，省和城市的联动js代码
+	
+	2：系统设置的部门设置
+		部门（用户组）管理：CRUD 条件拼接查询（使用条件bean，方便扩展）
+
+	3：系统设置的人事设置
+	人事（用户）管理：CRUD 条件拼接查询、用户的启用停用
+
+	4：系统设置的操作权限组	（CRUD 条件拼接查询、设置菜单权限、设置具体操作权限）
+	权限管理：粗粒度（菜单级别（菜单动态生成）：自定义标签（参考CheckMenuTag））、细粒度（操作级别：注解，反射（参考LimitInterceptor），Struts2拦截器（参考LimitInterceptor）），数据库数据不完善，参考一个案例即可（用户组和用户的Action中）
+	
+	5：报表与分析的客户分类分析（按照客户的级别统计他们的数量）
+	报表：JFreeChart技术
+	
+	检查用户是否登录：Servlet过滤器技术Filter（参考SessionCheckUserFilter）
+	
+	CheckBox的多选全选：JQuery
+	
+	批量删除使用Struts2的CheckBox标签里面的fieldValue属性（参考部门的list页面）
+	域对象使用的适配模式：ServletRequestAware，ServletResponseAware（也可以是使用Struts2和Servlet的桥梁类ServletActionContext）
+	
+	Servlet过滤器技术：用户没有登录就不能操作
+	Struts2拦截器技术：配置拦截器栈（用于权限检查）
+	
+	树形菜单：jquery.treeview.js
+	
+	联合主键（主键是一个对象）：参考SysPopedom.hbm.xml文件
+	
+	日志记录：（参考CompanyServiceImpl的saveCompany方法）
+	二级缓存：org.hibernate.cache.EhCacheProvider（参考Hibernate配置文件和）ehcahce，参考拦截器LimitInterceptor的108行和CommonDaoImpl的193行(对比和116行的区别)、MenuAction的33行、CheckMenuTag的68行
+
+开发初始步骤：
+crm项目的架构
+   * 创建web工程
+   *  引入jar包
+       * mysql的驱动包
+       * hibernate需要的jar包
+       * spring需要的jar包
+       * struts2需要的jar包
+       * jstl 需要的jar包
+       * junit需要的jar包
+	* 包的介绍
+       * cn.cuit.crm.container:重新封装spring容器
+       * cn.cuit.crm.dao:放置的是dao接口
+       * cn.cuit.crm.dao.impl:放置的是dao接口的实现类
+       * cn.cuit.crm.domain:放置的是po类、po类和数据库表关联的映射文件
+       * cn.cuit.crm.service:业务层的接口
+	   * cn.cuit.crm.service.impl:业务层的接口的实现类
+	   * cn.cuit.crm.web.action:struts2的action
+	   * cn.cuit.crm.web.form:封装页面数据的javaBean
+	   * cn.cuit.crm.junit:开发人员测试用的
+	   * cn.cuit.crm.bean 该包中的JavaBean是保存的搜索的条件
+	
+	* 搭建hibernate层
+	   * 定义需求:部门信息的页面数据要插入到数据库中
+	   * 定义表
+	        #部门信息表
+			create database crm20160105; #数据库使用编码gb2312（项目工程是UTF-8编码）
+			use crm20160105;
+			CREATE TABLE sys_user_group (
+				  id INTEGER(11) NOT NULL AUTO_INCREMENT,               #编号
+				  remark TEXT,                                          #备注
+				  name VARCHAR(100) DEFAULT NULL,                       #部门名称
+				  principal VARCHAR(50)  DEFAULT NULL,                  #部门负责人
+				  incumbent VARCHAR(200)  DEFAULT NULL,                 #部门职能
+				  PRIMARY KEY (id)
+			);
+			
+			* 创建po对象，对应数据库,放置在cn.cuit.crm.domain包下
+		     public class SysUserGroup implements java.io.Serializable {
+				private Integer id;
+				/* 备注 */
+				private String remark;
+				/* 部门名称 */
+				private String name;
+				/* 部门负责人 */
+				private String principal;
+				/* 部门职能 */
+				private String incumbent;
+		     }
+			 
+			
+		  * 创建表和po之间的映射文件SysUserGroup.hbm.xml 放置在cn.cuit.crm.domain包下
+		     * SysUserGroup.hbm.xml文件的内容直接看该文件即可
+				
+		  * 创建hibernate.cfg.xml文件连接数据库,加载SysUserGroup.hbm.xml文件,放置src下
+			     <session-factory>
+					<property name="hibernate.connection.username">root</property>
+					<property name="hibernate.connection.password">123456</property>
+					<property name="hibernate.connection.url">jdbc:mysql://localhost:3306/crm20160105</property>
+					<property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+					<property name="hibernate.connection.autocommit">true</property>
+					<property name="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</property>
+					<property name="hibernate.hbm2ddl.auto">update</property>
+					<property name="hibernate.show_sql">true</property>
+					<mapping resource="cn/cuit/crm/domain/SysUserGroup.hbm.xml"/>
+				</session-factory>
+	
+			* 测试.放置在cn.cuit.crm.junit包下 
+				/* 说明：测试hibernate连接数据库  */
+				public class TestHibernate {
+					@Test
+					public void testHibernateConf() {
+						Configuration configuration = new Configuration();
+						configuration.configure();
+						SessionFactory sessionFactory = configuration.buildSessionFactory();
+						Session session = sessionFactory.openSession();
+						Transaction transaction = session.beginTransaction();
+						SysUserGroup sysUserGroup = new SysUserGroup();
+						sysUserGroup.setName("销售部01");
+						sysUserGroup.setPrincipal("部门负责人01");
+						sysUserGroup.setIncumbent("部门职能01");
+						sysUserGroup.setRemark("备注：测试数据01");
+						session.save(sysUserGroup);
+						transaction.commit();
+						session.close();
+					}
+				}
+				
+* 搭建spring和hibernate
+        * 创建beans.xml文件,放置在src下
+           * 引入必须的命名空间 bean tx context aop
+                <?xml version="1.0" encoding="UTF-8"?>
+				<beans  xmlns="http://www.springframework.org/schema/beans"
+				        xmlns:context="http://www.springframework.org/schema/context"
+				        xmlns:aop="http://www.springframework.org/schema/aop"
+				        xmlns:tx="http://www.springframework.org/schema/tx"
+						xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+						xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						                    http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+						                    http://www.springframework.org/schema/context 
+						                    http://www.springframework.org/schema/context/spring-context-2.5.xsd
+						                    http://www.springframework.org/schema/tx 
+						                    http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+						                    http://www.springframework.org/schema/aop 
+						                    http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">    
+		   * 配置如下:
+			       <!-- 1 配置注解的自动扫描-->
+				   <context:component-scan base-package="cn.cuit.crm"/>
+				   
+				   <!--3 配置本地化代理工程bean,这是spring整合hibernate的入口 -->
+				   <bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+				     <property name="configLocation">
+				       <!--表示在类路径下加载hibernate.cfg.xml  -->
+				       <value>classpath:hibernate.cfg.xml</value>
+				     </property>
+				   </bean>
+				   
+				   <!--4 创建事务管理器 aop切面-->
+				   <bean id="txManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+				      <property name="sessionFactory" ref="sessionFactory"/>
+				   </bean>
+				  
+				   <!--5 配置处理事务的注解-->
+				   <tx:annotation-driven transaction-manager="txManager"/>
+	   
+		   * 创建dao层共同的接口,放置在cn.cuit.crm.dao下
+			       public interface ICommonDao<T> {
+					  public void save(T entity);	
+				   }
+		   * 创建dao层共同的接口的实现类,,放置在cn.cuit.crm.dao.impl下
+				   public class CommonDaoImpl<T> extends HibernateDaoSupport implements ICommonDao<T> {
+						public void save(T entity) {
+							this.getHibernateTemplate().save(entity);
+						}
+						
+						@Resource(name="sessionFactory") //注入sessionFactory
+						public  void setSessionFactoryDI(SessionFactory sessionFactory) {
+							System.out.println("sessionFactory  "+sessionFactory);
+						    //调用父类的setSessionFactory方法,注入sessionFactory
+							super.setSessionFactory(sessionFactory);
+						}
+				   }   
+		   
+		   * 创建部门的dao接口 SysUserGroupDao接口		放在cn.cuit.crm.dao包下
+		            public interface ISysUserGroupDao extends ICommonDao<SysUserGroup> {
+						public final static String  SERVICE_NAME="cn.itcast.crm.dao.impl.SysUserGroupDaoImpl";
+					}
+		
+		   * 创建部门的dao接口的实现类  放在cn.cuit.crm.dao.impl包下
+		            @Repository(ISysUserGroupDao.SERVICE_NAME)
+					public class SysUserGroupDaoImpl extends CommonDaoImpl<SysUserGroup> implements ISysUserGroupDao {
+					}
+					
+			* 测试.放置在cn.cuit.crm.junit包下 
+				public class TestSysUserGroupDao {
+					@Test
+					public void testSave() {
+						ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+						ISysUserGroupDao sysUserGroupDao = (ISysUserGroupDao) ctx.getBean(ISysUserGroupDao.SERVICE_NAME);
+						SysUserGroup sysUserGroup = new SysUserGroup();
+						sysUserGroup.setName("销售部01");
+						sysUserGroup.setPrincipal("XXX01");
+						sysUserGroup.setIncumbent("TTT01");
+						sysUserGroupDao.save(sysUserGroup);
+					}
+				}
+			* 创建部门的业务层接口	,放置在cn.cuit.crm.service包下
+				public interface ISysUserGroupService {
+					public final static String  SERVICE_NAME="cn.itcast.crm.service.impl.SysUserGroupServiceImpl";
+					public void saveSysUserGroup(SysUserGroup sysUserGroup);
+				}
+			
+		    * 创建部门的业务层接口实现类,放置在cn.cuit.crm.service.impl包下	
+		    	@Transactional(readOnly=true)
+				@Service(ISysUserGroupService.SERVICE_NAME)
+				public class SysUserGroupServiceImpl implements ISysUserGroupService {
+				
+					@Resource(name=ISysUserGroupDao.SERVICE_NAME)
+					private ISysUserGroupDao sysUserGroupDao;
+				 	
+					@Transactional(isolation=Isolation.DEFAULT,propagation=Propagation.REQUIRED,readOnly=false)
+					public void saveSysUserGroup(SysUserGroup sysUserGroup) {
+						sysUserGroupDao.save(sysUserGroup);
+					}
+				}
+			
+			* 测试.放置在cn.cuit.crmjunit包下 
+			public class TestSysUserGroupService {
+				@Test
+				public void testSave() {
+					ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+					ISysUserGroupService sysUserGroupService = (ISysUserGroupService) ctx.getBean(ISysUserGroupService.SERVICE_NAME);
+					SysUserGroup sysUserGroup = new SysUserGroup();
+					sysUserGroup.setName("销售部02");
+					sysUserGroup.setPrincipal("XXX02");
+					sysUserGroup.setIncumbent("TTT02");
+					sysUserGroupService.saveSysUserGroup(sysUserGroup);
+				}
+			}
+* 搭建struts2(保存部门信息)
+	     * jsp页面(sys/group/add.jsp)
+	     * 请求的路径/sys/sysUserGroupAction_save.do
+	     * 根据路径创建SysUserGroupAction和在action中增加save方法，放置在cn.cuit.crm.web.action包下
+				public class SysUserGroupAction extends ActionSupport
+					public String save() throws IllegalAccessException, InvocationTargetException{
+						System.out.println("xxxxxxxxxxxxxxxxxxxxxxxx ");
+						return null;
+					}
+				}
+				
+		  * 建立请求路径和action之间的关联
+		     * 创建struts.xml文件,放置在src下
+		     * 文件内容如下:
+		        <?xml version="1.0" encoding="UTF-8"?>
+				<!DOCTYPE struts PUBLIC
+					"-//Apache Software Foundation//DTD Struts Configuration 2.1.7//EN"
+					"http://struts.apache.org/dtds/struts-2.1.7.dtd">
+				<struts>	
+				   <!-- 配置请求后缀名.do -->
+				   <constant name="struts.action.extension" value="do"/>
+				   
+				   <!-- 配置主题为简单主题 -->
+				   <constant name="struts.ui.theme" value="simple"/>
+				   
+				   <!--配置struts2的模式为开发模式-->
+				   <constant name="struts.devMode" value="true"/>
+				   
+				   <package name="sys" namespace="/sys" extends="struts-default">
+				      <action name="sysUserGroupAction_*" class="cn.cuit.crm.web.action.SysUserGroupAction" method="{1}">
+				         <result name="add">/sys/group/add.jsp</result>      
+				      </action>
+				   </package>
+				</struts> 
+		  
+		  * 在web.xml文件配置struts2的过滤器
+				<filter>
+					<filter-name>StrutsPrepareAndExecuteFilter</filter-name>
+					<filter-class>org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter</filter-class>
+				</filter>
+				<filter-mapping>
+					<filter-name>StrutsPrepareAndExecuteFilter</filter-name>
+					<url-pattern>/*</url-pattern>
+				</filter-mapping>
+		
+		  * 测试
+		  
+		  *  定义javaBean(vo对象)接收表单数据,放置在cn.cuit.crm.web.form包下
+		      public class SysUserGroupForm implements java.io.Serializable {
+					private String id;
+					private String name;
+					private String principal;
+					private String incumbent;
+					private String remark;
+			  }
+		  
+		  * action要实现模型驱动接口	  
+		       public class SysUserGroupAction extends ActionSupport implements ModelDriven<SysUserGroupForm>{
+				   private SysUserGroupForm sysUserGroupForm=new SysUserGroupForm();
+					public String save() throws IllegalAccessException, InvocationTargetException{
+						System.out.println("xxxxxxxxxxxxxxxxxxxxxxxx ");
+						return null;
+					}
+				
+					public SysUserGroupForm getModel() {
+						return sysUserGroupForm;
+					}
+				}
+		  		
+		  * 测试，SysUserGroupForm是否接收到值
+		  
+		  * 如何在struts2的SysUserGroupAction中的save方法中,获取spring容器中bean节点的对象
+		     * 创建ServiceProvinderCore,加载beans.xml文件,放置在cn.cuit.crm.container包下
+			       public class ServiceProvinderCore {
+						protected ApplicationContext ctx;
+						
+						/**
+						 * @param filename  beans.xml
+						 */
+						public void load(String filename){
+							ctx=new ClassPathXmlApplicationContext(filename);
+						}
+					}
+			 * 创建ServiceProvinder类,获取获取spring容器中bean节点的对象,放置在cn.cuit.crm.container包下
+			      public class ServiceProvinder {
+						private static ServiceProvinderCore sc;
+						
+						static{
+							System.err.println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+							sc=new ServiceProvinderCore();
+							sc.load("beans.xml");
+						}
+						
+						public static Object getService(String beanName){
+							System.err.println("ppppppppppppppppppppppp");
+							if(StringUtils.isBlank(beanName)){
+								throw new RuntimeException("您要访问的服务名称不能为空");
+							}
+							Object bean=null;
+							//如果spring容器中包含beanName
+							if(sc.ctx.containsBean(beanName)){
+								bean=sc.ctx.getBean(beanName);
+							}
+							
+							//如果spring容器中不包含beanName
+							if(bean==null){
+								throw new RuntimeException("您要访问的服务名称["+beanName+"]不存在");
+							}
+							
+							return bean;
+						}
+					}
+			 
+		   * 测试	 
+			    @Test
+				public void testSave() {
+					
+					ISysUserGroupService sysUserGroupService=(ISysUserGroupService)ServiceProvinder.getService(ISysUserGroupService.SERVICE_NAME);
+					
+					SysUserGroup sysUserGroup = new SysUserGroup();
+					sysUserGroup.setName("销售部");
+					sysUserGroup.setPrincipal("xxx");
+					sysUserGroup.setIncumbent("ttt");
+					
+					sysUserGroupService.saveSysUserGroup(sysUserGroup);
+				}  		
+				
+		   * 在 SysUserGroupAction中的save方法中增加如下代码
+		  		public String save() throws IllegalAccessException, InvocationTargetException{
+						System.out.println("sysUserGroupForm.getName()  "+sysUserGroupForm.getName());
+						
+						//实例化po对象
+						SysUserGroup sysUserGroup=new SysUserGroup();
+						
+						//赋值vo对象的值到po中
+						BeanUtils.copyProperties(sysUserGroup, sysUserGroupForm);
+						
+						//获取业务层的对象(本项目struts2和spring是分离的)
+						ISysUserGroupService sysUserGroupService=
+							   (ISysUserGroupService)ServiceProvinder.getService(ISysUserGroupService.SERVICE_NAME);
+						
+						//调用业务层保存po对象
+						sysUserGroupService.saveSysUserGroup(sysUserGroup);
+						
+						return null;
+					}
+			* 测试:		
+
+WebRoot目录下的menu和WEN-INF下的menu对应，ui于WEB-INF下的crm、sys对应
+
+

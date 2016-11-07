@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		                    http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+		                    http://www.springframework.org/schema/context 
+		                    http://www.springframework.org/schema/context/spring-context-2.5.xsd
+		                    http://www.springframework.org/schema/tx 
+		                    http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+		                    http://www.springframework.org/schema/aop 
+		                    http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+
+	<!-- 全注解开发 -->
+	<!-- 1 配置注解的自动扫描 -->
+	<context:component-scan base-package="cn.cuit.crm" />
+
+	<!-- 2 配置数据源 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+		<property name="driverClass" value="com.mysql.jdbc.Driver" />
+		<property name="jdbcUrl" value="jdbc:mysql://localhost:3306/crm20160105?useUnicode=true&amp;characterEncoding=GBK" />
+		<property name="user" value="root" />
+		<property name="password" value="123456" />
+		
+		<!--连接池中保留的最小连接数。-->
+		<property name="minPoolSize" value="5" />
+
+		<!--连接池中保留的最大连接数。Default: 15 -->
+		<property name="maxPoolSize" value="30" />
+
+		<!--初始化时获取的连接数，取值应在minPoolSize与maxPoolSize之间。Default: 3 -->
+		<property name="initialPoolSize" value="10" />
+
+		<!--最大空闲时间,60秒内未使用则连接被丢弃。若为0则永不丢弃。Default: 0 -->
+		<property name="maxIdleTime" value="60" />
+
+		<!--当连接池中的连接耗尽的时候c3p0一次同时获取的连接数。Default: 3 -->
+		<property name="acquireIncrement" value="5" />
+
+		<!--JDBC的标准参数，用以控制数据源内加载的PreparedStatements数量。但由于预缓存的statements 属于单个connection而不是整个连接池。所以设置这个参数需要考虑到多方面的因素。 
+			如果maxStatements与maxStatementsPerConnection均为0，则缓存被关闭。Default: 0 -->
+		<property name="maxStatements" value="0" />
+
+		<!--每60秒检查所有连接池中的空闲连接。Default: 0-->
+		<property name="idleConnectionTestPeriod" value="60" />
+
+		<!--定义在从数据库获取新连接失败后重复尝试的次数。Default: 30-->
+		<property name="acquireRetryAttempts" value="30" />
+
+		<!--获取连接失败将会引起所有等待连接池来获取连接的线程抛出异常。但是数据源仍有效 保留，并在下次调用getConnection()的时候继续尝试获取连接。如果设为true，那么在尝试 
+			获取连接失败后该数据源将申明已断开并永久关闭。Default: false-->
+		<property name="breakAfterAcquireFailure" value="true" />
+	</bean>
+
+	<!-- 3 配置本地化代理工厂bean,这是spring整合hibernate的入口 -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+		<!-- 配置hibernate使用的连接池 -->
+		<property name="dataSource" ref="dataSource" />
+		<!-- configLocations用于加载多个文件，这里我们只有一个文件 -->
+		<property name="configLocation">
+			<!-- 表示在类路径下加载hibernate.cfg.xml -->
+			<value>classpath:hibernate.cfg.xml</value>
+		</property>
+	</bean>
+
+	<!-- 4 创建事务管理器:即 aop切面 -->
+	<bean id="txManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	
+	<!-- 5配置通知:即声明式事务(xml配置方式)，通知是属于切面的一部分  -->
+	<!--  
+	<tx:advice id="advice" transaction-manager="txManager">
+		<tx:attributes>
+		    isolation是事务隔离级别  propagation事务的传播行为  read-only事务的可读性
+			<tx:method name="save*" isolation="DEFAULT" propagation="REQUIRED" read-only="false"/>
+			<tx:method name="update*" isolation="DEFAULT" propagation="REQUIRED" read-only="false"/>
+			<tx:method name="*" read-only="true"/>
+		</tx:attributes>
+	</tx:advice>
+	-->
+
+	<!-- 6配置切入点 (xml配置方式) -->
+	<!--
+	<aop:config>
+		<aop:pointcut id="perform" expression="execution ( * cn.cuit.crm.service..*.*(..))" />
+		<aop:advisor advice-ref="advice" pointcut-ref="perform"/>
+	</aop:config>
+	-->
+	
+	<!--7 配置处理事务的注解：即使用注解方式 ，就可以去掉5和6-->
+	<tx:annotation-driven transaction-manager="txManager" />
+	
+	<!-- 通过XML配置文件的方式注入，这里我们采用注解注入 ，下面只是一个例子 -->
+	<!--
+	<bean id="xxx" class="cn.cuit.crm.dao.impl.ComonDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	-->
+</beans>

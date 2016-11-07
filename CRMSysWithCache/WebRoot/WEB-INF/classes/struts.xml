@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+	"-//Apache Software Foundation//DTD Struts Configuration 2.1.7//EN"
+	"http://struts.apache.org/dtds/struts-2.1.7.dtd">
+<struts>
+	<!-- 配置请求后缀名.do -->
+	<constant name="struts.action.extension" value="do" />
+
+	<!-- 配置主题为简单主题 -->
+	<constant name="struts.ui.theme" value="simple" />
+
+	<!--配置struts2的模式为开发模式,热加载 -->
+	<constant name="struts.devMode" value="true" />
+	
+	<package name="report" namespace="/report" extends="struts-default">
+		<action name="reportAction_*" class="cn.cuit.crm.web.action.ReportAction" method="{1}">
+			<result name="khflfx">/WEB-INF/page/report/khflfxReport.jsp</result>
+		</action>
+	</package>
+	
+	<!-- 客户 -->
+	<package name="crm" namespace="/crm" extends="struts-default">
+		<action name="companyAction_*" class="cn.cuit.crm.web.action.CompanyAction" method="{1}">
+			<result name="list">/WEB-INF/page/crm/customer/base/list.jsp</result>
+			<result name="add">/WEB-INF/page/crm/customer/base/add.jsp</result>
+			<result name="edit">/WEB-INF/page/crm/customer/base/edit.jsp</result>
+			<result name="listAction" type="redirectAction">
+				<param name="actionName">companyAction_list</param>
+				<param name="namespace">/crm</param>
+			</result>
+			
+			<!-- 处理共享 -->
+			<result name="showShareSetOne">/WEB-INF/page/crm/customer/base/shareSetOne.jsp</result>
+			<result name="showShareCancelOne">/WEB-INF/page/crm/customer/base/shareCancelOne.jsp</result>
+			<result name="showShareViewOne">/WEB-INF/page/crm/customer/base/shareViewOne.jsp</result>
+			<result name="updateShareSetOne" type="chain">
+				<param name="actionName">companyAction_showShareSetOne</param>
+				<param name="namespace">/crm</param>
+			</result>
+			
+			<!-- 取消共享 -->
+			<result name="updateShareCancelOne" type="chain">
+				<param name="actionName">companyAction_showShareCancelOne</param>
+				<param name="namespace">/crm</param>
+			</result>
+			
+			<!-- 出理下次联系时间  -->
+			<result name="showNextTouchTime">/WEB-INF/page/crm/customer/base/nextTouchTime.jsp</result>
+			<result name="updateNextTouchTime" type="chain">
+				<param name="actionName">companyAction_showNextTouchTime</param>
+				<param name="namespace">/crm</param>
+			</result>
+			
+			<!-- 显示经手人变更页面 -->
+			<result name="showChangePerson">/WEB-INF/page/crm/customer/base/changePerson.jsp</result>
+			<result name="changeHandler" type="chain">
+				<param name="actionName">companyAction_showChangePerson</param>
+				<param name="namespace">/crm</param>
+			</result>
+		</action>
+	</package>
+	
+	<!-- 系统 -->
+	<package name="sys" namespace="/sys" extends="struts-default">
+		<!-- 配置权限拦截器 -->
+		<interceptors>
+			<!-- 声明拦截器 -->
+			<interceptor name="limitInterceptor" class="cn.cuit.crm.interceptor.LimitInterceptor"/>
+			<!-- 配置一个新的拦截器栈 -->
+			<interceptor-stack name="limitStack">
+				<!-- Struts2的默认拦截器栈  -->
+				<interceptor-ref name="defaultStack"/>
+				<!-- 自己配的拦截器栈要放在默认的后面 -->
+				<interceptor-ref name="limitInterceptor">
+					<!-- 配置不拦截的方法isLogin(如果多个方法的话，使用逗号隔开)，否则没法登陆。MenuAction的top,left被拦截就无法显示页面了-->
+					<param name="excludeMethods">isLogin, top, left</param>
+				</interceptor-ref>
+			</interceptor-stack>
+		</interceptors>
+        
+		<!-- 启用拦截器栈（它包含了Struts2的拦截器同时又加上了自己配的拦截器），然后将它设置为默认拦截器栈（即执行时使用的拦截器栈,打开它就可以使用权限拦截） -->
+		<default-interceptor-ref name="limitStack"/>
+		
+		<!-- 全局转发页面 （转发到没有权限的提示页面）-->
+		<global-results>
+			<result name="popmsg_popedom">/WEB-INF/page/popmsg_popedom.jsp</result>
+		</global-results>
+		
+		<!-- 处理用户组 -->
+		<action name="sysUserGroupAction_*" class="cn.cuit.crm.web.action.SysUserGroupAction"
+			method="{1}">
+			<result name="add">/WEB-INF//page/sys/group/add.jsp</result>
+			<result name="edit">/WEB-INF/page/sys/group/edit.jsp</result>
+			<result name="list">/WEB-INF/page/sys/group/list.jsp</result>
+			<!-- 重定向到Action -->
+			<result name="listAction" type="redirectAction">
+				<param name="actionName">sysUserGroupAction_list</param>
+				<param name="namespace">/sys</param>
+			</result>
+		</action>
+		
+		<!-- 处理人事 -->
+		<action name="sysUserAction_*" class="cn.cuit.crm.web.action.SysUserAction"
+			method="{1}">
+			<result name="add">/WEB-INF/page/sys/user/add.jsp</result>
+			<result name="edit">/WEB-INF/page/sys/user/edit.jsp</result>
+			<result name="list">/WEB-INF/page/sys/user/list.jsp</result>
+			<result name="main">/WEB-INF/page/menu/main.jsp</result>
+			<result name="login">/WEB-INF/page/login.jsp</result>
+			<!-- 重定向到Action -->
+			<result name="listAction" type="redirectAction">
+				<param name="actionName">sysUserAction_list</param>
+				<param name="namespace">/sys</param>
+			</result>
+		</action>
+		
+		<!-- 处理菜单的Action -->
+		<action name="menuAction_*" class="cn.cuit.crm.web.action.MenuAction"
+			method="{1}">
+			<result name="top">/WEB-INF/page/menu/top.jsp</result>
+			<result name="left">/WEB-INF/page/menu/left.jsp</result>
+		</action>
+		
+		<!-- 处理角色 -->
+		<action name="sysRoleAction_*" class="cn.cuit.crm.web.action.SysRoleAction"
+			method="{1}">
+			<result name="add">/WEB-INF/page/sys/role/add.jsp</result>
+			<result name="edit">/WEB-INF/page/sys/role/edit.jsp</result>
+			<result name="list">/WEB-INF/page/sys/role/list.jsp</result>
+			<!-- 重定向到Action -->
+			<result name="listAction" type="redirectAction">
+				<param name="actionName">sysRoleAction_list</param>
+				<param name="namespace">/sys</param>
+			</result>
+			
+			<!-- 处理操作权限的 -->
+			<result name="listPopedom">/WEB-INF/page/sys/role/popedom/view.jsp</result>
+			<!-- 使用转发链（转发到Action），请求参数在转发链不会丢 ,转发到jsp就不用这样写，直接默认的就OK-->
+			<result name="updatePopedom" type="chain">
+				<param name="actionName">sysRoleAction_listPopedom</param>
+				<param name="namespace">/sys</param>
+			</result>
+			
+			<!-- 处理菜单权限 -->
+			<result name="listMenu">/WEB-INF/page/sys/role/menu/view.jsp</result>
+			<!-- 使用转发链（转发到Action），请求参数不会丢 -->
+			<result name="updateMenu" type="chain">
+				<param name="actionName">sysRoleAction_listMenu</param>
+				<param name="namespace">/sys</param>
+			</result>
+		</action>
+	</package>
+</struts>

@@ -1,0 +1,161 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<class name="cn.cuit.crm.domain.SysUser" table="sys_user">
+		<id name="id" type="java.lang.Integer">
+			<column name="id" />
+			<generator class="identity" />
+		</id>
+		<property name="creator" type="string">
+			<column name="creator" length="100" />
+		</property>
+		<property name="createTime" type="string">
+			<column name="createTime" length="19" />
+		</property>
+		<property name="updater" type="string">
+			<column name="updater" length="100" />
+		</property>
+		<property name="updateTime" type="string">
+			<column name="updateTime" length="19" />
+		</property>
+		<property name="remark" type="string">
+			<column name="remark" length="65535" />
+		</property>
+		<property name="name" type="string">
+			<column name="name" length="100" />
+		</property>
+		<property name="cnname" type="string">
+			<column name="cnname" length="100" />
+		</property>
+		<property name="password" type="string">
+			<column name="password" length="100" />
+		</property>
+		<property name="address" type="string">
+			<column name="address" length="200" />
+		</property>
+		<property name="telephone" type="string">
+			<column name="telephone" length="100" />
+		</property>
+		<property name="email" type="string">
+			<column name="email" length="100" />
+		</property>
+		<property name="beginDate" type="date">
+			<column name="beginDate" length="10" />
+		</property>
+		<property name="endDate" type="date">
+			<column name="endDate" length="10" />
+		</property>
+
+		<!-- 配置多对一的映射 -->
+		<!-- 配置多个用户输入同一个部门 -->
+		<many-to-one name="sysUserGroup" class="cn.cuit.crm.domain.SysUserGroup"
+			lazy="false">
+			<!-- sysUserGroup是使用外键关联的，它对应sysUser中的groupId外键 -->
+			<column name="groupId"></column>
+		</many-to-one>
+
+		<!--多个用户对应一个角色(权限组) -->
+		<many-to-one name="sysRole" class="cn.cuit.crm.domain.SysRole"
+			lazy="false">
+			<column name="roleId"></column>
+		</many-to-one>
+
+		<property name="accessFileLevel" type="string">
+			<column name="accessFileLevel" length="50" />
+		</property>
+		<property name="status" type="string">
+			<column name="status" length="10" />
+		</property>
+		<property name="commendMan" type="string">
+			<column name="commendMan" length="50" />
+		</property>
+		<property name="movetelePhone" type="string">
+			<column name="movetelePhone" length="20" />
+		</property>
+		<property name="nowAddress" type="string">
+			<column name="nowAddress" length="200" />
+		</property>
+		<property name="nowtelePhone" type="string">
+			<column name="nowtelePhone" length="20" />
+		</property>
+		<property name="identityCode" type="string">
+			<column name="identityCode" length="20" />
+		</property>
+		<property name="insuranceCode" type="string">
+			<column name="insuranceCode" length="20" />
+		</property>
+		<property name="instancyLinkman" type="string">
+			<column name="instancyLinkman" length="50" />
+		</property>
+		<property name="instancytelePhone" type="string">
+			<column name="instancytelePhone" length="50" />
+		</property>
+		<property name="sex" type="string">
+			<column name="sex" length="10" />
+		</property>
+		<property name="birthday" type="date">
+			<column name="birthday" length="10" />
+		</property>
+		<property name="personnelType" type="string">
+			<column name="personnelType" length="50" />
+		</property>
+		<property name="duty" type="string">
+			<column name="duty" length="50" />
+		</property>
+		<property name="workDate" type="date">
+			<column name="workDate" length="10" />
+		</property>
+		<property name="highSchool" type="string">
+			<column name="highSchool" length="100" />
+		</property>
+		<property name="finishSchool" type="string">
+			<column name="finishSchool" length="100" />
+		</property>
+		<property name="finishSchoolDate" type="date">
+			<column name="finishSchoolDate" length="10" />
+		</property>
+		<property name="consortName" type="string">
+			<column name="consortName" length="100" />
+		</property>
+		<property name="youngoneName" type="string">
+			<column name="youngoneName" length="100" />
+		</property>
+		<property name="officetelePhone" type="string">
+			<column name="officetelePhone" length="20" />
+		</property>
+		<property name="consorttelePhone" type="string">
+			<column name="consorttelePhone" length="20" />
+		</property>
+		<property name="avocation" type="string">
+			<column name="avocation" length="65535" />
+		</property>
+		<property name="consortCompany" type="string">
+			<column name="consortCompany" length="200" />
+		</property>
+		<property name="strongSuit" type="string">
+			<column name="strongSuit" length="65535" />
+		</property>
+		<property name="commUniCate" type="string">
+			<column name="commUniCate" length="65535" />
+		</property>
+		<property name="bringup" type="string">
+			<column name="bringup" length="65535" />
+		</property>
+		<property name="organise" type="string">
+			<column name="organise" length="65535" />
+		</property>
+		<property name="analyse" type="string">
+			<column name="analyse" length="65535" />
+		</property>
+		<property name="planing" type="string">
+			<column name="planing" length="65535" />
+		</property>
+		<property name="empolder" type="string">
+			<column name="empolder" length="65535" />
+		</property>
+		<property name="relation" type="string">
+			<column name="relation" length="65535" />
+		</property>
+	</class>
+</hibernate-mapping>

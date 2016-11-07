@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 与数据库映射，相当于中间人 -->
+<hibernate-mapping>
+	<class name="cn.cuit.crm.domain.SysRole" table="sys_role">
+		<id name="id" type="string">
+			<!-- 主键生成策略,采用uuid -->
+			<column name="id"></column>
+			<generator class="uuid" />
+		</id>
+		
+		<property name="name" type="string">
+			<column name="name" sql-type="varchar(100)"/>
+		</property>
+		<property name="remark" type="text">
+			<column name="remark" />
+		</property>
+	</class>
+</hibernate-mapping>
+
+

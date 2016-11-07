@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 与数据库映射，相当于中间人 -->
+<hibernate-mapping>
+	<class name="cn.cuit.crm.domain.SysUserGroup" table="sys_user_group">
+		<id name="id" type="integer">
+			<!-- 主键生成策略,采用数据库的自增长 -->
+			<column name="id"/>
+			<generator class="identity" />
+		</id>
+		
+		<property name="remark" type="text">
+			<column name="remark" />
+		</property>
+		
+		<property name="name" type="string">
+			<!-- 不写长度默认是255 -->
+			<column name="name" sql-type="varchar(100)"/>
+		</property>
+		
+		<property name="principal" type="string">
+			<column name="principal" sql-type="varchar(50)"/>
+		</property>
+		
+		<property name="incumbent" type="string">
+			<column name="incumbent" sql-type="varchar(200)"/>
+		</property>
+	</class>
+</hibernate-mapping>
+
+

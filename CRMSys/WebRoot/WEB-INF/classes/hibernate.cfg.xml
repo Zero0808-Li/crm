@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+	"-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+	"http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+	<session-factory>
+		<!--数据库连接设置 ，实际中要使用连接池，这种用法学习时可以使用 -->
+		<!-- <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+		<property name="hibernate.connection.url">jdbc:mysql://localhost:3306/crm20160105</property>
+		<property name="hibernate.connection.username">root</property>
+		<property name="hibernate.connection.password">123456</property> -->
+
+
+		<!-- 自动提交事务，用于测试，部署运行时要去除 -->
+		<!-- <property name="hibernate.connection.autocommit">true</property> -->
+
+		<!-- 方言 -->
+		<property name="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</property>
+
+		<!-- 自动创建表和更新表结构 -->
+		<property name="hibernate.hbm2ddl.auto">update</property>
+
+		<!-- 控制台显示SQL -->
+		<property name="hibernate.show_sql">true</property>
+
+		<!-- 格式化控制台SQL -->
+		<property name="hibernate.format_sql">true</property>
+
+		<!-- 管理实体类映射文件 -->
+		<mapping resource="cn/cuit/crm/domain/SysUserGroup.hbm.xml" />
+		<mapping resource="cn/cuit/crm/domain/SysRole.hbm.xml" />
+		<mapping resource="cn/cuit/crm/domain/SysUser.hbm.xml" />
+		<mapping resource="cn/cuit/crm/domain/SysPopedom.hbm.xml" />
+		<mapping resource="cn/cuit/crm/domain/SysPopedomPrivilege.hbm.xml" />
+		<mapping resource="cn/cuit/crm/domain/SysMenu.hbm.xml" />
+		<mapping resource="cn/cuit/crm/domain/SysMenuPrivilege.hbm.xml" />
+		<mapping resource="cn/cuit/crm/domain/Company.hbm.xml" />
+		<mapping resource="cn/cuit/crm/domain/SysCodeRule.hbm.xml" />
+		<mapping resource="cn/cuit/crm/domain/SysDictionaryType.hbm.xml" />
+		<mapping resource="cn/cuit/crm/domain/City.hbm.xml" />
+		<mapping resource="cn/cuit/crm/domain/Province.hbm.xml" />
+		<mapping resource="cn/cuit/crm/domain/SysOperateLog.hbm.xml" />
+	</session-factory>
+</hibernate-configuration>

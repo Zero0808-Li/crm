@@ -1,0 +1,32 @@
+/* CSS Document */
+.reportTitle {
+	width:100%;
+	font-size:14px;
+	color:#104C78;
+	text-align:center;
+	line-height: 30px;
+}
+.reportTable {
+	border-collapse:collapse;
+	border:solid #CCCCCC 1px;
+}
+.reportTable td {
+	border-left:solid #CCCCCC 1px;
+	line-height:150%;
+	PADDING-LEFT: 5px;
+	PADDING-RIGHT: 5px;
+}
+.reportTable th {
+	border-left:solid #CCCCCC 1px;
+	line-height:150%;
+	PADDING-LEFT: 5px;
+	PADDING-RIGHT: 5px;
+}
+.reportTable .thead {
+	border:solid #CCCCCC 1px;
+	PADDING-LEFT: 5px;
+	PADDING-RIGHT: 5px;
+	PADDING-TOP: 1px;
+	font-weight:bold;
+	background: url(../images/bar.gif) repeat-x left center;
+}

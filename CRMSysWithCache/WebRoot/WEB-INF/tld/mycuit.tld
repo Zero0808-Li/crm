@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+	version="2.0">
+	<description>mycuit 1.0 core library</description>
+	<display-name>cuit core</display-name>
+	<tlib-version>1.0</tlib-version>
+	<short-name>cuit</short-name>
+	<uri>http://www.cuit.cn/jsp/jstl/core</uri>
+	<tag>
+		<name>checkMenu</name>
+		<tag-class>cn.cuit.crm.tag.CheckMenuTag</tag-class>
+		<!-- 标签体不能为空,标签体中可以包含其他标签体 -->
+		<body-content>scriptless</body-content>
+		<attribute>
+			<name>module</name>
+			<required>true</required>
+			<!-- 支持EL表达式 -->
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>privilege</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+</taglib>
